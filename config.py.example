@@ -1,0 +1,3 @@
+DEVICE_ID = '1'
+IFACE = 'wlp3s0'
+EXPERIMENT_DURATION = 5 * 24 * 60 * 60 # 5 days in seconds
