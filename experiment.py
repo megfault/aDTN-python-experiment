@@ -6,8 +6,8 @@ import sched
 from yaml import load
 
 
-from message_store import DataStore
-from aDTN import aDTN
+from pyadtn.message_store import DataStore
+from pyadtn.aDTN import aDTN
 
 DEVICE_ID = '1'
 IFACE = 'wlp3s0'
