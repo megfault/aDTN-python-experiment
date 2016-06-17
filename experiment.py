@@ -12,9 +12,10 @@ from pyadtn.aDTN import aDTN
 # According to http://www.internetlivestats.com/twitter-statistics/ there was an avg of 350,000 tweets/minute in 2015.
 # According to http://www.statista.com/statistics/282087/number-of-monthly-active-twitter-users/ Twitter had
 # 350,000,000 users in 2015. That makes 0.07 tweets per hour per user, on average - i.e. 1 tweet every 14.28 hours.
-CREATION_RATE = 14.28
+CREATION_RATE = 14.28 * 3600  # 14.28 hours in seconds
 SENDING_FREQS = [5, 10, 30, 60]
-BATCH_SIZE = [1,10, 20]
+BATCH_SIZE = [1,10]
+EXPERIMENT_DURATION = 5 * 24 * 3600 # 5 days in seconds
 
 
 class MessageGenerator:
