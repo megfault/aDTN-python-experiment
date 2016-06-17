@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
             # Start message generation
             t_generate_messages = Thread(target=MessageGenerator, args=(CREATION_RATE, device_id,))
-            t_adtn.start()
+            t_generate_messages.start()
 
             # Start location manager
             t_location_manager = Thread(target=LocationManager, args=(device_id,))
