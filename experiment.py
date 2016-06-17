@@ -16,7 +16,7 @@ CREATION_RATE = 14.28 * 3600  # 14.28 hours in seconds
 SENDING_FREQS = [5, 10, 30, 60]
 BATCH_SIZE = [1,10]
 EXPERIMENT_DURATION = 5 * 24 * 3600 # 5 days in seconds
-
+IFACE = "wlan0"
 
 class MessageGenerator:
     """
@@ -88,14 +88,18 @@ class LocationManager:
 
     def run(self):
         """Schedule all network joinings and leavings for the current device."""
+        # make sure the device is not in any ad-hoc network
+        call("iw {} ibss leave".format(IFACE))
         for network in self.schedule:
             location = network['location']
-            begin = network['begin']
-            end = network['end']
-            beginning_time = 0
-            ending_time = 0
-            self.scheduler.enterabs(beginning_time, 2, self.schedule_joining, (location,))
-            self.scheduler.enterabs(ending_time, 2 , self.schedule_leaving)
+            begin = network['begin'] * 3600
+            end = network['end'] * 3600
+            if end < begin:
+                # the node is at this location already at "midnight", i.e. now
+                # (per definition, it's midnight when the experiment begins)
+                call("iw {} ibss join {} 2432".format(IFACE, location))
+            self.scheduler.enter(begin, 2, self.schedule_joining, (location,))
+            self.scheduler.enter(end, 2 , self.schedule_leaving)
 
 
 for bs in BATCH_SIZE:
