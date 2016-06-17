@@ -4,6 +4,7 @@ from subprocess import call
 from random import gauss
 import sched
 from yaml import load
+from argparse import ArgumentParser
 
 
 from pyadtn.message_store import DataStore
@@ -101,30 +102,36 @@ class LocationManager:
             self.scheduler.enter(begin, 2, self.schedule_joining, (location,))
             self.scheduler.enter(end, 2 , self.schedule_leaving)
 
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument('device_id', type=str, help='the hostname of this device')
+    args = parser.parse_args()
 
-for bs in BATCH_SIZE:
-    for sf in SENDING_FREQS:
-        # Inform about current config.
-        fn = "_".join([str(i) for i in [bs, sf, CREATION_RATE]])
-        print("Now running: {}".format(fn))
+    device_id = args.device_id
 
-        # Start aDTN
-        t_adtn = Thread(target=aDTN, args =(bs, sf, CREATION_RATE, DEVICE_ID, IFACE,), kwargs={"data_store": fn})
-        t_adtn.start()
+    for bs in BATCH_SIZE:
+        for sf in SENDING_FREQS:
+            # Inform about current config.
+            fn = "_".join([str(i) for i in [bs, sf, CREATION_RATE]])
+            print("Now running: {}".format(fn))
 
-        # Start message generation
-        t_generate_messages = Thread(target=MessageGenerator, args=(CREATION_RATE, DEVICE_ID,))
-        t_adtn.start()
+            # Start aDTN
+            t_adtn = Thread(target=aDTN, args =(bs, sf, CREATION_RATE, device_id, IFACE,), kwargs={"data_store": fn})
+            t_adtn.start()
 
-        # Start location manager
-        t_location_manager = Thread(target=LocationManager, args=(DEVICE_ID,))
-        t_location_manager.start()
+            # Start message generation
+            t_generate_messages = Thread(target=MessageGenerator, args=(CREATION_RATE, device_id,))
+            t_adtn.start()
+
+            # Start location manager
+            t_location_manager = Thread(target=LocationManager, args=(device_id,))
+            t_location_manager.start()
 
 
-        sleep(EXPERIMENT_DURATION)
-        t_adtn._stop()
-        t_generate_messages._stop()
-        t_location_manager._stop()
+            sleep(EXPERIMENT_DURATION)
+            t_adtn._stop()
+            t_generate_messages._stop()
+            t_location_manager._stop()
 
 
 
