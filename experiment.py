@@ -18,6 +18,7 @@ SENDING_FREQS = [5, 10, 30, 60]
 BATCH_SIZE = [1,10]
 EXPERIMENT_DURATION = 5 * 24 * 3600 # 5 days in seconds
 IFACE = "wlan0"
+FREQ = 2432 # 802.11 channel 1
 
 
 class MessageGenerator:
@@ -78,7 +79,7 @@ class LocationManager:
     """
     Change the ESSID of this device according to a schedule in order to simulate a new set of neighbors.
     """
-    def __init__(self, device_id, adtn):
+    def __init__(self, device_id, adtn_instance):
         """
         Initialize the location manager.
         :param device_id: identifier for the device running this
@@ -92,7 +93,15 @@ class LocationManager:
         self.__scheduler = sched.scheduler(time, sleep)
         self.__running = None
         self.__thread_manage_location = None
-        self.__adtn_instance = adtn
+        self.__adtn_instance = adtn_instance
+
+    def __leave(self):
+        self.__adtn_instance.stop_receiving()  # close the socket opened by the packet sniffer before leaving
+        call(["iw", IFACE, "ibss", "leave"])
+
+    def __join(self, essid):
+        call(["iw", IFACE, "ibss", "join", essid, FREQ])
+        self.__adtn_instance.start_receiving()  # start packet sniffing after joining an IBSS network
 
     def __schedule_joining(self, essid):
         """
@@ -101,19 +110,18 @@ class LocationManager:
         """
         if self.__running is True:
             self.__scheduler.enter(24 * 60 * 60, 2, self.__schedule.joining, (essid,))  # repeat every 24h
-            call("iw {} ibss join {} 2432".format(IFACE, essid))
+            self.__join(essid)
 
     def __schedule_leaving(self):
         """Leave a wireless ad-hoc network. Reschedule itself to happen in 24h."""
         if self.__running is True:
             self.__scheduler.enter(24 * 60 * 60, 2, self.__schedule.leaving)  # repeat every 24h
-            call("iw {} ibss leave".format(IFACE))
+            self.__leave()
 
     def start(self):
         """Schedule all network joinings and leavings for the current device."""
-        # make sure the device is not in any ad-hoc network
         self.__running = True
-        call(("iw", IFACE, "ibss", "leave"))
+        self.__leave()  # make sure the device is not in any ad-hoc network
         for network in self.__schedule:
             location = network['location']
             begin = network['begin'] * 3600
@@ -121,7 +129,7 @@ class LocationManager:
             if end < begin:
                 # the node is at this location already at "midnight", i.e. now
                 # (per definition, it's midnight when the experiment begins)
-                call(("iw", IFACE, "ibss",  "join",  location, "2432"))
+                self.__join(location)
             self.__scheduler.enter(begin, 2, self.__schedule_joining, (location,))
             self.__scheduler.enter(end, 2, self.__schedule_leaving)
         self.__thread_manage_location = Thread(target=self.__scheduler.run, kwargs={"blocking": True})
@@ -137,7 +145,7 @@ class LocationManager:
             self.stop()  # ...call the stop function once more.
             # By now the scheduler has run empty and so the sending thread has stopped.
         # Now let's just leave any ibss network we might be in:
-        call(["iw", IFACE,"ibss", "leave"])
+        self.__leave()
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -166,8 +174,8 @@ if __name__ == "__main__":
             lm = LocationManager(device_id, adtn)
             lm.start()
 
-
             sleep(EXPERIMENT_DURATION)
+            # Experiment is over, stop all threads:
             lm.stop()
             mg.stop()
             adtn.stop()
