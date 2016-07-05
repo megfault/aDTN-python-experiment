@@ -118,7 +118,7 @@ if __name__ == "__main__":
             print("Now running: {}".format(experiment_id))
 
             # Start aDTN
-            t_adtn = Thread(target=aDTN, args=(bs, sf, CREATION_RATE, device_id, IFACE, experiment_id,))
+            t_adtn = Thread(target=aDTN, args=(bs, sf, IFACE, experiment_id,))
             t_adtn.start()
 
             # Start message generation
