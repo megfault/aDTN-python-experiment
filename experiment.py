@@ -24,7 +24,7 @@ class MessageGenerator:
     Generate messages of the form dn_ct where dn is the name of the device creating the message and ct is a counter
     serving as a unique identifier for the messages created by the device.
     """
-    def __init__(self, creation_rate, device_id):
+    def __init__(self, creation_rate, device_id, data_store):
         """
         Initialize the message generator. Generation is scheduled to happen on average every creation_rate seconds,
         following a gaussian distribution.
@@ -34,7 +34,7 @@ class MessageGenerator:
         self.creation_rate = creation_rate
         self.device_id = device_id
         self.next_message = 0
-        self.ms = DataStore()
+        self.ms = DataStore(data_store)
         self.scheduler = sched.scheduler(time, sleep)
         self.run()
 
@@ -118,11 +118,11 @@ if __name__ == "__main__":
             print("Now running: {}".format(experiment_id))
 
             # Start aDTN
-            t_adtn = Thread(target=aDTN, args=(bs, sf, CREATION_RATE, device_id, IFACE, experiment_id))
+            t_adtn = Thread(target=aDTN, args=(bs, sf, CREATION_RATE, device_id, IFACE, experiment_id,))
             t_adtn.start()
 
             # Start message generation
-            t_generate_messages = Thread(target=MessageGenerator, args=(CREATION_RATE, device_id,))
+            t_generate_messages = Thread(target=MessageGenerator, args=(CREATION_RATE, device_id, experiment_id,))
             t_generate_messages.start()
 
             # Start location manager
