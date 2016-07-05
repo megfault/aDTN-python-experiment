@@ -36,6 +36,13 @@ adtn-experiment:
     - group: root
     - mode: 0440
 
+/etc/profile:
+  file.managed:
+    - source: salt://files/profile
+    - user: root
+    - group: root
+    - mode: 0444
+
 /etc/systemd/system/adtn.service:
   file.managed:
     - source: salt://systemd/adtn.service
