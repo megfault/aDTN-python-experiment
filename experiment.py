@@ -90,7 +90,7 @@ class LocationManager:
     def run(self):
         """Schedule all network joinings and leavings for the current device."""
         # make sure the device is not in any ad-hoc network
-        call("iw {} ibss leave".format(IFACE))
+        call(("iw", IFACE, "ibss", "leave"))
         for network in self.schedule:
             location = network['location']
             begin = network['begin'] * 3600
@@ -98,7 +98,7 @@ class LocationManager:
             if end < begin:
                 # the node is at this location already at "midnight", i.e. now
                 # (per definition, it's midnight when the experiment begins)
-                call("iw {} ibss join {} 2432".format(IFACE, location))
+                call(("iw", IFACE, "ibss",  "join",  location, "2432"))
             self.scheduler.enter(begin, 2, self.schedule_joining, (location,))
             self.scheduler.enter(end, 2 , self.schedule_leaving)
 
