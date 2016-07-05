@@ -76,7 +76,7 @@ class LocationManager:
     """
     Change the ESSID of this device according to a schedule in order to simulate a new set of neighbors.
     """
-    def __init__(self, device_id):
+    def __init__(self, device_id, adtn):
         """
         Initialize the location manager.
         :param device_id: identifier for the device running this
@@ -84,31 +84,35 @@ class LocationManager:
         try:
             config = open("scheduling/{}.yaml".format(device_id))
         except OSError:
-            print("Invalid schedule.")
+            print("Invalid schedule file.")
             raise
-        self.schedule = load(config.read())
-        self.scheduler = sched.scheduler(time, sleep)
+        self.__schedule = load(config.read())
+        self.__scheduler = sched.scheduler(time, sleep)
+        self.__running = None
+        self.__thread_manage_location = None
+        self.__adtn_instance = adtn
 
-        self.run()
-
-    def schedule_joining(self, essid):
+    def __schedule_joining(self, essid):
         """
         Join a wireless ad-hoc network with the given ESSID. Reschedule itself to happen in 24h.
         :param essid: name of the ad-hoc network
         """
-        self.scheduler.enter(24 * 60 * 60, 2, self.schedule.joining, (essid,))  # repeat every 24h
-        call("iw {} ibss join {} 2432".format(IFACE, essid))
+        if self.__running is True:
+            self.__scheduler.enter(24 * 60 * 60, 2, self.__schedule.joining, (essid,))  # repeat every 24h
+            call("iw {} ibss join {} 2432".format(IFACE, essid))
 
-    def schedule_leaving(self):
+    def __schedule_leaving(self):
         """Leave a wireless ad-hoc network. Reschedule itself to happen in 24h."""
-        self.scheduler.enter(24 * 60 * 60, 2, self.schedule.leaving)  # repeat every 24h
-        call("iw {} ibss leave".format(IFACE))
+        if self.__running is True:
+            self.__scheduler.enter(24 * 60 * 60, 2, self.__schedule.leaving)  # repeat every 24h
+            call("iw {} ibss leave".format(IFACE))
 
-    def run(self):
+    def start(self):
         """Schedule all network joinings and leavings for the current device."""
         # make sure the device is not in any ad-hoc network
+        self.__running = True
         call(("iw", IFACE, "ibss", "leave"))
-        for network in self.schedule:
+        for network in self.__schedule:
             location = network['location']
             begin = network['begin'] * 3600
             end = network['end'] * 3600
@@ -116,8 +120,22 @@ class LocationManager:
                 # the node is at this location already at "midnight", i.e. now
                 # (per definition, it's midnight when the experiment begins)
                 call(("iw", IFACE, "ibss",  "join",  location, "2432"))
-            self.scheduler.enter(begin, 2, self.schedule_joining, (location,))
-            self.scheduler.enter(end, 2 , self.schedule_leaving)
+            self.__scheduler.enter(begin, 2, self.__schedule_joining, (location,))
+            self.__scheduler.enter(end, 2, self.__schedule_leaving)
+        self.__thread_manage_location = Thread(target=self.__scheduler.run, kwargs={"blocking": True})
+        self.__thread_manage_location.start()
+
+    def stop(self):
+        self.__running = False
+        try:
+            while not self.__scheduler.empty():
+                event = self.__scheduler.queue.pop()
+                self.__scheduler.cancel(event)
+        except ValueError:  # In case the popped event started running in the meantime...
+            self.stop()  # ...call the stop function once more.
+            # By now the scheduler has run empty and so the sending thread has stopped.
+        # Now let's just leave any ibss network we might be in:
+        call(["iw", IFACE,"ibss", "leave"])
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -143,12 +161,12 @@ if __name__ == "__main__":
             mg.start()
 
             # Start location manager
-            t_location_manager = Thread(target=LocationManager, args=(device_id, adtn,))
-            t_location_manager.start()
+            lm = LocationManager(device_id, adtn)
+            lm.start()
 
 
             sleep(EXPERIMENT_DURATION)
-            t_location_manager._stop()
-            adtn.stop()
+            lm.stop()
             mg.stop()
+            adtn.stop()
 
