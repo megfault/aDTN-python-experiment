@@ -114,11 +114,11 @@ if __name__ == "__main__":
     for bs in BATCH_SIZE:
         for sf in SENDING_FREQS:
             # Inform about current config.
-            data_store_filename = "_".join([str(i) for i in [bs, sf, CREATION_RATE]])
-            print("Now running: {}".format(fn))
+            experiment_id = "message_dissemination_" + "_".join([str(i) for i in [bs, sf, CREATION_RATE]])
+            print("Now running: {}".format(experiment_id))
 
             # Start aDTN
-            t_adtn = Thread(target=aDTN, args=(bs, sf, CREATION_RATE, device_id, IFACE, data_store_filename))
+            t_adtn = Thread(target=aDTN, args=(bs, sf, CREATION_RATE, device_id, IFACE, experiment_id))
             t_adtn.start()
 
             # Start message generation
