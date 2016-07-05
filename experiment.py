@@ -19,6 +19,7 @@ BATCH_SIZE = [1,10]
 EXPERIMENT_DURATION = 5 * 24 * 3600 # 5 days in seconds
 IFACE = "wlan0"
 
+
 class MessageGenerator:
     """
     Generate messages of the form dn_ct where dn is the name of the device creating the message and ct is a counter
@@ -71,6 +72,7 @@ class MessageGenerator:
         except ValueError: # In case the popped event started running in the meantime...
             self.stop() # ...call the stop function once more.
         # By now the scheduler has run empty and so the generating thread has stopped.
+
 
 class LocationManager:
     """
