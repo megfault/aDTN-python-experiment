@@ -159,7 +159,7 @@ if __name__ == "__main__":
     for bs in BATCH_SIZE:
         for sf in SENDING_FREQS:
             # Inform about current config.
-            experiment_id = "message_dissemination_" + "_".join([str(i) for i in [bs, sf, CREATION_RATE]])
+            experiment_id = "message_dissemination_" + "_".join([str(i) for i in ["bs", bs, "sf", sf, "cr", CREATION_RATE]])
             print("Now running: {}".format(experiment_id))
 
             # Start aDTN
