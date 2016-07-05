@@ -108,6 +108,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     device_id = args.device_id
+    
+    call(("network-setup.sh", IFACE))
 
     for bs in BATCH_SIZE:
         for sf in SENDING_FREQS:
