@@ -30,31 +30,47 @@ class MessageGenerator:
         following a gaussian distribution.
         :param creation_rate: average time between every two new generated messages
         :param device_id: identifier for the device running this
+        :param data_store: name of the file where to store the messages
         """
-        self.creation_rate = creation_rate
-        self.device_id = device_id
-        self.next_message = 0
-        self.ms = DataStore(data_store)
-        self.scheduler = sched.scheduler(time, sleep)
-        self.run()
+        self.__creation_rate = creation_rate
+        self.__device_id = device_id
+        self.__next_message = 0
+        self.__ms = DataStore(data_store)
+        self.__scheduler = sched.scheduler(time, sleep)
+        self.__running = None
 
-    def writing_interval(self):
+    def __writing_interval(self):
         """
         Generate a time interval according to a gaussian distribution around the creation rate.
         :return: interval in seconds between generating two messages
         """
-        return abs(gauss(self.creation_rate, self.creation_rate / 4))
+        return abs(gauss(self.__creation_rate, self.__creation_rate / 4))
 
-    def write_message(self):
-        """Add a new message to the message store and reschedule itself."""
-        self.scheduler.enter(self.writing_interval(), 2, self.write_message)
-        self.ms.add_object(self.device_id + '_' + str(self.next_message))
-        self.next_message += 1
+    def __generate_message(self):
+        """Add a new message to the message store and reschedule itself if the MessageGenerator has not been instructed
+        to stop."""
+        if self.__running is True:
+            self.__scheduler.enter(self.__writing_interval(), 2, self.__generate_message)
+            self.__ms.add_object(self.__device_id + '_' + str(self.__next_message))
+            self.__next_message += 1
 
-    def run(self):
-        """ Initialize the scheduling of new message generation."""
-        self.scheduler.enter(self.writing_interval(), 2, self.write_message)
+    def start(self):
+        """ Initialize the scheduling of message generation."""
+        self.__running = True
+        self.__scheduler.enter(self.__writing_interval(), 2, self.__generate_message)
+        self.__thread_generate = Thread(target=self.__scheduler.run, kwargs={"blocking": True})
+        self.__thread_generate.start()
 
+    def stop(self):
+        """ Stop the scheduling of message generation."""
+        self.__running = False
+        try:
+            while not self.__scheduler.empty():
+                event = self.__scheduler.queue.pop()
+                self.__scheduler.cancel(event)
+        except ValueError: # In case the popped event started running in the meantime...
+            self.stop() # ...call the stop function once more.
+        # By now the scheduler has run empty and so the generating thread has stopped.
 
 class LocationManager:
     """
@@ -72,6 +88,7 @@ class LocationManager:
             raise
         self.schedule = load(config.read())
         self.scheduler = sched.scheduler(time, sleep)
+
         self.run()
 
     def schedule_joining(self, essid):
@@ -118,22 +135,20 @@ if __name__ == "__main__":
             print("Now running: {}".format(experiment_id))
 
             # Start aDTN
-            t_adtn = Thread(target=aDTN, args=(bs, sf, IFACE, experiment_id,))
-            t_adtn.start()
+            adtn = aDTN(bs, sf, IFACE, experiment_id)
+            adtn.start()
 
             # Start message generation
-            t_generate_messages = Thread(target=MessageGenerator, args=(CREATION_RATE, device_id, experiment_id,))
-            t_generate_messages.start()
+            mg = MessageGenerator(CREATION_RATE, device_id,experiment_id)
+            mg.start()
 
             # Start location manager
-            t_location_manager = Thread(target=LocationManager, args=(device_id,))
+            t_location_manager = Thread(target=LocationManager, args=(device_id, adtn,))
             t_location_manager.start()
 
 
             sleep(EXPERIMENT_DURATION)
-            t_adtn._stop()
-            t_generate_messages._stop()
             t_location_manager._stop()
-
-
+            adtn.stop()
+            mg.stop()
 
