@@ -96,12 +96,14 @@ class LocationManager:
         self.__adtn_instance = adtn_instance
 
     def __leave(self):
-        self.__adtn_instance.stop()  # close the socket opened by the packet sniffer before leaving
+        print("stopping adtn")
+        self.__adtn_instance.stop()
         call(["iw", IFACE, "ibss", "leave"])
 
     def __join(self, essid):
         call(["iw", IFACE, "ibss", "join", essid, FREQ])
-        self.__adtn_instance.start()  # start packet sniffing after joining an IBSS network
+        print("starting adtn")
+        self.__adtn_instance.start()
 
     def __schedule_joining(self, essid):
         """
