@@ -5,7 +5,7 @@ from random import gauss
 import sched
 from yaml import load
 from argparse import ArgumentParser
-
+from atexit import register
 
 from pyadtn.message_store import DataStore
 from pyadtn.aDTN import aDTN
@@ -164,19 +164,24 @@ if __name__ == "__main__":
 
             # Start aDTN
             adtn = aDTN(bs, sf, IFACE, experiment_id)
+            register(aDTN.stop, adtn)
             adtn.start()
 
             # Start message generation
             mg = MessageGenerator(CREATION_RATE, device_id,experiment_id)
+            register(MessageGenerator.stop, mg)
             mg.start()
 
             # Start location manager
             lm = LocationManager(device_id, adtn)
+            register(LocationManager.stop, lm)
             lm.start()
 
             sleep(EXPERIMENT_DURATION)
             # Experiment is over, stop all threads:
-            lm.stop()
-            mg.stop()
-            adtn.stop()
-
+            # "At normal program termination (for instance, if sys.exit() is called or the main module’s execution
+            # completes), all functions registered are called in last in, first out order." - atexit's register docs
+            # So the following explicit calls are not needed anymore:
+            # lm.stop()
+            # mg.stop()
+            # adtn.stop()
