@@ -133,7 +133,7 @@ class LocationManager:
                 # (per definition, it's midnight when the experiment begins)
                 self.__join(location)
             self.__scheduler.enter(begin, 2, self.__schedule_joining, (location,))
-            self.__scheduler.enter(end, 2, self.__schedule_leaving)
+            self.__scheduler.enter(end, 1, self.__schedule_leaving)
         self.__thread_manage_location = Thread(target=self.__scheduler.run, kwargs={"blocking": True})
         self.__thread_manage_location.start()
 
