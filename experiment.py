@@ -73,7 +73,7 @@ class MessageGenerator:
         except ValueError: # In case the popped event started running in the meantime...
             self.stop() # ...call the stop function once more.
         # By now the scheduler has run empty and so the generating thread has stopped.
-
+        print("Terminated message generator.")
 
 class LocationManager:
     """
@@ -146,6 +146,7 @@ class LocationManager:
             # By now the scheduler has run empty and so the sending thread has stopped.
         # Now let's just leave any ibss network we might be in:
         self.__leave()
+        print("Terminated location manager")
 
 if __name__ == "__main__":
     parser = ArgumentParser()
