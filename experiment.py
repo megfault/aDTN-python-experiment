@@ -168,7 +168,6 @@ if __name__ == "__main__":
             # Start aDTN
             adtn = aDTN(bs, sf, IFACE, experiment_id)
             register(aDTN.stop, adtn)
-            adtn.start()
 
             # Start message generation
             mg = MessageGenerator(CREATION_RATE, device_id,experiment_id)
