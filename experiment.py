@@ -123,7 +123,6 @@ class LocationManager:
     def start(self):
         """Schedule all network joinings and leavings for the current device."""
         self.__running = True
-        self.__leave()  # make sure the device is not in any ad-hoc network
         for network in self.__schedule:
             location = network['location']
             begin = network['begin'] * 3600
