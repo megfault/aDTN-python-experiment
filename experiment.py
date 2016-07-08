@@ -99,9 +99,11 @@ class LocationManager:
         print("stopping adtn")
         self.__adtn_instance.stop()
         call(["iw", IFACE, "ibss", "leave"])
+        print("left ad-hoc network")
 
     def __join(self, essid):
         call(["iw", IFACE, "ibss", "join", essid, FREQ])
+        print("joined ad-hoc network {}".format(essid))
         print("starting adtn")
         self.__adtn_instance.start()
 
