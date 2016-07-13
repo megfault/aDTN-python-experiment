@@ -32,12 +32,12 @@ class MessageGenerator:
         following a gaussian distribution.
         :param creation_rate: average time between every two new generated messages
         :param device_id: identifier for the device running this
-        :param data_store: name of the file where to store the messages
+        :param data_store: DataStore object that manages the messages
         """
         self.__creation_rate = creation_rate
         self.__device_id = device_id
         self.__next_message = 0
-        self.__ms = DataStore(data_store)
+        self.__ms = data_store
         self.__scheduler = sched.scheduler(time, sleep)
         self.__running = None
 
@@ -163,14 +163,15 @@ if __name__ == "__main__":
     for bs in BATCH_SIZE:
         for sf in SENDING_FREQS:
             # Inform about current config.
-            experiment_id = "message_dissemination_" + "_".join([str(i) for i in ["bs", bs, "sf", sf, "cr", CREATION_RATE]])
+            experiment_id = "message_dissemination_" + "_".join(
+                [str(i) for i in ["bs", bs, "sf", sf, "cr", CREATION_RATE]])
             print("Now running: {}".format(experiment_id))
 
             # Start aDTN
             adtn = aDTN(bs, sf, IFACE, experiment_id)
 
             # Start message generation
-            mg = MessageGenerator(CREATION_RATE, device_id,experiment_id)
+            mg = MessageGenerator(CREATION_RATE, device_id, adtn.data_store)
             register(MessageGenerator.stop, mg)
             mg.start()
 
