@@ -25,7 +25,7 @@ class MessageGenerator:
     Generate messages of the form dn_ct where dn is the name of the device creating the message and ct is a counter
     serving as a unique identifier for the messages created by the device.
     """
-    def __init__(self, creation_rate, data_store):
+    def __init__(self, creation_rate, device, data_store):
         """
         Initialize the message generator. Generation is scheduled to happen on average every creation_rate seconds,
         following a gaussian distribution.
@@ -33,7 +33,7 @@ class MessageGenerator:
         :param data_store: DataStore object that manages the messages
         """
         self.__creation_rate = creation_rate
-        self.__device_id = device_id
+        self.__device = device
         self.__next_message = 0
         self.__ms = data_store
         self.__scheduler = sched.scheduler(time, sleep)
@@ -51,7 +51,7 @@ class MessageGenerator:
         to stop."""
         if self.__running is True:
             self.__scheduler.enter(self.__writing_interval(), 2, self.__generate_message)
-            self.__ms.add_object(self.__device_id + '_' + str(self.__next_message))
+            self.__ms.add_object(self.__device + '_' + str(self.__next_message))
             self.__next_message += 1
 
     def start(self):
