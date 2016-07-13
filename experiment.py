@@ -7,7 +7,6 @@ from yaml import load
 from argparse import ArgumentParser
 from atexit import register
 
-from pyadtn.message_store import DataStore
 from pyadtn.aDTN import aDTN
 
 # According to http://www.internetlivestats.com/twitter-statistics/ there was an avg of 350,000 tweets/minute in 2015.
@@ -15,10 +14,10 @@ from pyadtn.aDTN import aDTN
 # 350,000,000 users in 2015. That makes 0.07 tweets per hour per user, on average - i.e. 1 tweet every 14.28 hours.
 CREATION_RATE = 14.28 * 3600  # 14.28 hours in seconds
 SENDING_FREQS = [5, 10, 30, 60]
-BATCH_SIZE = [1,10]
-EXPERIMENT_DURATION = 5 * 24 * 3600 # 5 days in seconds
+BATCH_SIZE = [1, 10]
+EXPERIMENT_DURATION = 5 * 24 * 3600  # 5 days in seconds
 IFACE = "wlan0"
-FREQ = str(2432) # 802.11 channel 1
+FREQ = str(2432)  # 802.11 channel 1
 
 
 class MessageGenerator:
@@ -26,12 +25,11 @@ class MessageGenerator:
     Generate messages of the form dn_ct where dn is the name of the device creating the message and ct is a counter
     serving as a unique identifier for the messages created by the device.
     """
-    def __init__(self, creation_rate, device_id, data_store):
+    def __init__(self, creation_rate, data_store):
         """
         Initialize the message generator. Generation is scheduled to happen on average every creation_rate seconds,
         following a gaussian distribution.
         :param creation_rate: average time between every two new generated messages
-        :param device_id: identifier for the device running this
         :param data_store: DataStore object that manages the messages
         """
         self.__creation_rate = creation_rate
@@ -70,22 +68,23 @@ class MessageGenerator:
             while not self.__scheduler.empty():
                 event = self.__scheduler.queue.pop()
                 self.__scheduler.cancel(event)
-        except ValueError: # In case the popped event started running in the meantime...
-            self.stop() # ...call the stop function once more.
+        except ValueError:  # In case the popped event started running in the meantime...
+            self.stop()  # ...call the stop function once more.
         # By now the scheduler has run empty and so the generating thread has stopped.
         print("Terminated message generator.")
+
 
 class LocationManager:
     """
     Change the ESSID of this device according to a schedule in order to simulate a new set of neighbors.
     """
-    def __init__(self, device_id, adtn_instance):
+    def __init__(self, device, adtn_instance):
         """
         Initialize the location manager.
-        :param device_id: identifier for the device running this
+        :param device: identifier of the device running this
         """
         try:
-            config = open("scheduling/{}.yaml".format(device_id))
+            config = open("scheduling/{}.yaml".format(device))
         except OSError:
             print("Invalid schedule file.")
             raise
