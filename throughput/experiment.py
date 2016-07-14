@@ -1,6 +1,7 @@
 from time import time, sleep
 from subprocess import call
 from argparse import ArgumentParser
+from atexit import register
 
 from pyadtn.aDTN import aDTN
 
@@ -28,6 +29,7 @@ if __name__ == "__main__":
 
             # Start aDTN
             adtn = aDTN(bs, sf, IFACE, experiment_id)
+            register(aDTN.stop, adtn)
             adtn.start()
 
             sleep(EXPERIMENT_DURATION)
