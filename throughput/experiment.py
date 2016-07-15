@@ -7,7 +7,7 @@ from pyadtn.aDTN import aDTN
 
 SENDING_FREQS = [5, 10, 30, 60]
 BATCH_SIZE = [1, 10]
-EXPERIMENT_DURATION = 10 * 3600  # 10 minutes in seconds
+EXPERIMENT_DURATION = 10 * 60  # 10 minutes in seconds
 IFACE = "wlan0"
 FREQ = str(2432)  # 802.11 channel 1
 
