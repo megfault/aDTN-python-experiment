@@ -19,6 +19,7 @@ if __name__ == "__main__":
     device_id = args.device_id
 
     call(("./network-setup.sh", IFACE))
+    call(["iw", IFACE, "ibss", "join", "test", FREQ])
 
     for bs in BATCH_SIZE:
         for sf in SENDING_FREQS:
