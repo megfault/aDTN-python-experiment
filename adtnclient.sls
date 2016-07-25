@@ -17,6 +17,12 @@ pyadtn:
     - require: 
       - pkg: adtn-system-packages
 
+pyric:
+  pip.installed:
+    - name: pyric
+    - user: adtn
+    - bin_env: /home/adtn/.virtualenvs/pyadtn
+
 scapy-python3:
   pip.installed:
     - user: adtn
