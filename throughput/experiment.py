@@ -6,9 +6,9 @@ from atexit import register
 from pyadtn.aDTN import aDTN
 from pyadtn.utils import info, debug
 
-SENDING_FREQS = [10]
-BATCH_SIZE = [10]
-EXPERIMENT_DURATION = 1 * 60  # 1 minute in seconds
+SENDING_FREQS = [60, 30, 15, 1]
+BATCH_SIZE = [1, 10]
+EXPERIMENT_DURATION = 5 * 60 + 10 # 5 minutes and 5 seconds (in seconds)
 IFACE = "wlan0"
 FREQ = str(2432)  # 802.11 channel 1
 
@@ -31,7 +31,6 @@ if __name__ == "__main__":
 
             # Start aDTN
             adtn = aDTN(bs, sf, IFACE, experiment_id)
-            register(aDTN.stop, adtn)
             adtn.start()
 
             sleep(EXPERIMENT_DURATION)
