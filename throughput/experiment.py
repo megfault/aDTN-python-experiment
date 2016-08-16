@@ -13,7 +13,7 @@ FREQ = str(2432)  # 802.11 channel 1
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('device_id', type=str, help='the hostname of this device')
-    parser.add_argument('sending_freq', type=int, help='time between sending of a batch (in seconds)')
+    parser.add_argument('sending_freq', type=float, help='time between sending of a batch (in seconds)')
     parser.add_argument('batch_size', type=int, help='batch size (in number of packets)')
     args = parser.parse_args()
 
