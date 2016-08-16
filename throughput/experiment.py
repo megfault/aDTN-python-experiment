@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
     call(("./network-setup.sh", IFACE))
     call(["iw", IFACE, "ibss", "join", "test", FREQ])
+    sleep(5)
 
     # Inform about current config.
     experiment_id = "throughput_" + "_".join(
