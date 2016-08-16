@@ -1,7 +1,6 @@
-from time import time, sleep
+from time import sleep
 from subprocess import call
 from argparse import ArgumentParser
-from atexit import register
 
 from pyadtn.aDTN import aDTN
 from pyadtn.utils import info, debug
@@ -23,7 +22,6 @@ if __name__ == "__main__":
 
     call(("./network-setup.sh", IFACE))
     call(["iw", IFACE, "ibss", "join", "test", FREQ])
-
 
     # Inform about current config.
     experiment_id = "throughput_" + "_".join(
