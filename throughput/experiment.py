@@ -8,7 +8,7 @@ from pyadtn.utils import info, debug
 
 EXPERIMENT_DURATION = 5 * 60 + 10 # 5 minutes and 5 seconds (in seconds)
 IFACE = "wlan0"
-FREQ = str(2432)  # 802.11 channel 1
+FREQ = str(2432)  # 802.11 channel 5
 
 if __name__ == "__main__":
     parser = ArgumentParser()
