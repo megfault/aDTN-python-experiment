@@ -3,7 +3,6 @@ from subprocess import call
 from argparse import ArgumentParser
 
 from pyadtn.aDTN import aDTN
-from pyadtn.utils import info, debug
 
 EXPERIMENT_DURATION = 5 * 60 + 10 # 5 minutes and 5 seconds (in seconds)
 IFACE = "wlan0"
@@ -27,7 +26,6 @@ if __name__ == "__main__":
     # Inform about current config.
     experiment_id = "throughput_" + "_".join(
         [str(i) for i in ["bs", bs, "sf", sf, "cr"]])
-    info("\nNow running: {}".format(experiment_id))
 
     # Start aDTN
     adtn = aDTN(bs, sf, IFACE, experiment_id)
