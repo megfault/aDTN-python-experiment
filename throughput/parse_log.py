@@ -12,7 +12,7 @@ def parse(fn, st, et):
             if items[1][:5] == "start":
                 t, bs, sf = items[1].split("-")
             else:
-                time = items[0][1:-1]
+                time = float(items[0][1:-1])
                 if st <= time <= et:
                     event = items[1]
                     if event == "snt":
