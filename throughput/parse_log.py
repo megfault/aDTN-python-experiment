@@ -7,16 +7,16 @@ def parse(fn, st, et):
     with open("network_events.log") as events_file:
         for line in events_file:
             items = line[:-1].split(" ")
-            time = items[0][1:-1]
             if items[1][:5] == "start":
                 t, bs, sf = items[1].split("-")
-            if time < st or time > et:
-                pass
-            event = items[1]
-            if event == "snt":
-                snd_ct += int(items[2])
-            elif event == "rcv":
-                rcv_ct += 1
+            else:
+                time = items[0][1:-1]
+                if st <= time <= et:
+                    event = items[1]
+                    if event == "snt":
+                        snd_ct += int(items[2])
+                    elif event == "rcv":
+                        rcv_ct += 1
     print("sf: {}, bs: {}, snd_ct: {}, rcv_ct: {}".format(sf, bs, snd_ct, rcv_ct))
 
 if __name__ == "__main__":
