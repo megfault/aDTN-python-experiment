@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 
 from pyadtn.aDTN import aDTN
 
-EXPERIMENT_DURATION = 5 * 60 + 10 # 5 minutes and 5 seconds (in seconds)
+EXPERIMENT_DURATION = 5 * 60 # 5 minutes (in seconds)
 IFACE = "wlan0"
 FREQ = str(2432)  # 802.11 channel 5
 
